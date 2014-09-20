@@ -39,14 +39,17 @@ int keyTranslation [65535];
 /*
  * Start event injection
  */
-void Java_org_synergy_injection_Injection_start (JNIEnv *env, jobject thiz) {
+void Java_org_synergy_injection_Injection_start (JNIEnv *env, jobject thiz, jstring deviceName) {
   struct input_id id = {
     0x06, /*BUS_VIRTUAL, /* Bus type. */
     1, /* Vendor id. */
     1, /* Product id. */
     1 /* Version id. */
   };
-  uinput_fd = suinput_open("qwerty", &id);
+
+  jboolean isCopy;
+  const char * szDeviceName = (*env)->GetStringUTFChars(env, deviceName, &isCopy);
+  uinput_fd = suinput_open(szDeviceName, &id);
 
   build_key_translation_table ();
 }
@@ -186,11 +189,13 @@ static void build_key_translation_table () {
     keyTranslation [63237] = KEY_MENU;   // F2 to MENU
     keyTranslation [63238] = KEY_BACK;   // F3 to BACK
     keyTranslation [63239] = KEY_SEARCH; // F4 to SEARCH
+    keyTranslation [63240] = KEY_POWER;  // F5 to POWER
     
     keyTranslation [61374] = KEY_HOME;   // F1 to HOME
     keyTranslation [61375] = KEY_MENU;   // F2 to MENU
     keyTranslation [61376] = KEY_BACK;   // F3 to BACK
     keyTranslation [61377] = KEY_SEARCH; // F4 to SEARCH
+    keyTranslation [61378] = KEY_POWER;  // F5 to POWER
 }
 
 static inline int keycode (int key) {

@@ -21,6 +21,7 @@ package org.synergy.client;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 import org.synergy.base.Event;
 import org.synergy.base.EventJobInterface;
@@ -39,11 +40,14 @@ import org.synergy.net.DataSocketInterface;
 import org.synergy.net.NetworkAddress;
 import org.synergy.net.SocketFactoryInterface;
 
+import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.widget.Toast;
 
 public class Client implements EventTarget {
 	
+	private final Context context;
 	private String name;
 	private NetworkAddress serverAddress;
 	private Stream stream;
@@ -56,10 +60,11 @@ public class Client implements EventTarget {
 	
 	private ServerProxy server;
 
-	public Client (final String name, final NetworkAddress serverAddress,
+	public Client (final Context context, final String name, final NetworkAddress serverAddress,
 			SocketFactoryInterface socketFactory, StreamFilterFactoryInterface streamFilterFactory,
 			ScreenInterface screen) {
 		
+		this.context = context;
 		this.name = name;
 		this.serverAddress = serverAddress;
 		this.socketFactory = socketFactory;
@@ -109,9 +114,15 @@ public class Client implements EventTarget {
 
             socket.connect (serverAddress);
             
-		} catch (Exception e) {
-            // TODO
-			e.printStackTrace ();
+            final Toast toast = Toast.makeText(context, "Connected to " + serverAddress.getHostname()
+                    + ":" + serverAddress.getPort(), Toast.LENGTH_SHORT);
+            toast.show();
+		} catch (IOException e) {
+			final String errorMessage = "Failed to connect to " + serverAddress.getHostname()
+					+ ":" + serverAddress.getPort();
+			Log.error(errorMessage);
+			final Toast toast = Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT);
+			toast.show();
 		}
 	}
 	
