@@ -227,7 +227,7 @@ public class ServerProxy {
 			break;
 
 		case CCLIPBOARD:
-			grabClipboard (new ClipboardMessage (din));
+			grabClipboard (new ClipboardMessage (header, din));
 			break;
 
 		case CSCREENSAVER:

@@ -25,10 +25,11 @@ import java.io.IOException;
 public class ClipboardMessage extends Message {
 	public static final MessageType MESSAGE_TYPE = MessageType.DCLIPBOARD;
 	
-	public ClipboardMessage (DataInputStream din) throws IOException {
-	}
-	
-	public String toString () {
+    public ClipboardMessage(MessageHeader header, DataInputStream din) throws IOException {
+        din.skipBytes(header.getDataSize());
+    }
+
+    public String toString () {
 		return "ClipboardMessage: TODO";
 	}
 }
