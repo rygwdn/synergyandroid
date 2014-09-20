@@ -132,6 +132,7 @@ public class Synergy extends Activity {
         }
     }
 
+    // TODO: android.os.Handler?
     private class MainLoopThread extends Thread {
 
         public void run() {
