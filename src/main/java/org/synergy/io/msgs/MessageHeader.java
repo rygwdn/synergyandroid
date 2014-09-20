@@ -27,36 +27,37 @@ import java.io.IOException;
 
 /**
  * Describes a message header
- * 
- * Size = 
- *  length of message type +
- *  message data size (see Message.write)
+ * <p/>
+ * Size =
+ * length of message type +
+ * message data size (see Message.write)
  */
 public class MessageHeader {
-	private final static int MESSAGE_TYPE_SIZE = 4;
-	
-	private Integer size;
-	private Integer dataSize;
-	private MessageType type;
-	
-	public MessageHeader (MessageType type) {
-		this.type = type;
-		this.size = type.getValue ().length ();
-		this.dataSize = null;  // User must set
-	}
-	
-	public MessageHeader (String type) {
-		this.type = MessageType.fromString (type);
-		this.size = this.type.getValue ().length ();
-		this.dataSize = null;  // User must set
-	}
-	
-	/**
-	 * Read in a message header
-	 * @param din Data input stream from socket
-	 */
-	public MessageHeader (DataInputStream din) throws IOException {
-		int messageSize = din.readInt ();
+    private final static int MESSAGE_TYPE_SIZE = 4;
+
+    private Integer size;
+    private Integer dataSize;
+    private MessageType type;
+
+    public MessageHeader(MessageType type) {
+        this.type = type;
+        this.size = type.getValue().length();
+        this.dataSize = null;  // User must set
+    }
+
+    public MessageHeader(String type) {
+        this.type = MessageType.fromString(type);
+        this.size = this.type.getValue().length();
+        this.dataSize = null;  // User must set
+    }
+
+    /**
+     * Read in a message header
+     *
+     * @param din Data input stream from socket
+     */
+    public MessageHeader(DataInputStream din) throws IOException {
+        int messageSize = din.readInt();
         if (messageSize == 0) {
             this.type = MessageType.CNOOP;
             this.size = MESSAGE_TYPE_SIZE;
@@ -70,43 +71,45 @@ public class MessageHeader {
         this.type = MessageType.fromString(new String(messageTypeBytes));
         this.size = MESSAGE_TYPE_SIZE;
         this.dataSize = messageSize - this.size;
-	}
-	
-	/**
-	 * Set the size of the DATA passed along with this message
-	 * @param dataSize
-	 */
-	public void setDataSize (int dataSize) {
-		this.dataSize = dataSize;
-	}
-	
-	/**
-	 * Get the size of the data in the message
-	 */
-	public int getDataSize () {
-		return this.dataSize;
-	}
-	
-	/**
-	 * Get the message type for the message this header describes
-	 * @return
-	 */
-	public MessageType getType () {
-		return type;
-	}
-	
-	public void write (DataOutputStream dout) throws IOException {
-		if (dataSize == null) {
-			throw new IOException ("Message header size is null");
-		}
-		
-		dout.writeInt(size + dataSize);
-		dout.write (type.getValue ().getBytes("UTF8"));
-		
-	}
+    }
 
-	public String toString () {
-		return "MessageHeader:" + size + ":" + dataSize + ":" + type;
-	}
-	
+    /**
+     * Get the size of the data in the message
+     */
+    public int getDataSize() {
+        return this.dataSize;
+    }
+
+    /**
+     * Set the size of the DATA passed along with this message
+     *
+     * @param dataSize
+     */
+    public void setDataSize(int dataSize) {
+        this.dataSize = dataSize;
+    }
+
+    /**
+     * Get the message type for the message this header describes
+     *
+     * @return
+     */
+    public MessageType getType() {
+        return type;
+    }
+
+    public void write(DataOutputStream dout) throws IOException {
+        if (dataSize == null) {
+            throw new IOException("Message header size is null");
+        }
+
+        dout.writeInt(size + dataSize);
+        dout.write(type.getValue().getBytes("UTF8"));
+
+    }
+
+    public String toString() {
+        return "MessageHeader:" + size + ":" + dataSize + ":" + type;
+    }
+
 }

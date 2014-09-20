@@ -29,8 +29,8 @@ public class HelloBackMessage extends Message {
     private int minorVersion;
     private String name;
 
-    public HelloBackMessage (int majorVersion, int minorVersion, String name) {
-        super (MESSAGE_TYPE);
+    public HelloBackMessage(int majorVersion, int minorVersion, String name) {
+        super(MESSAGE_TYPE);
 
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
@@ -38,9 +38,9 @@ public class HelloBackMessage extends Message {
     }
 
     @Override
-    protected final void writeData () throws IOException {
-        dataStream.writeShort (majorVersion);
-        dataStream.writeShort (minorVersion);
-        dataStream.writeString (name);
+    protected final void writeData() throws IOException {
+        dataStream.writeShort(majorVersion);
+        dataStream.writeShort(minorVersion);
+        dataStream.writeString(name);
     }
 }

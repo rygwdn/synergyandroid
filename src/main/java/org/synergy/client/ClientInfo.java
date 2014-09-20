@@ -19,31 +19,32 @@
  */
 package org.synergy.client;
 
-import android.graphics.*;
+import android.graphics.Point;
+import android.graphics.Rect;
 
 public class ClientInfo {
 
-	Rect screenPosition;
-	Point cursorPos;
+    Rect screenPosition;
+    Point cursorPos;
 
-	public ClientInfo(Rect screenPosition, Point cursorPos) {
-		this.screenPosition = screenPosition;
-		this.cursorPos = cursorPos;
-	}
+    public ClientInfo(Rect screenPosition, Point cursorPos) {
+        this.screenPosition = screenPosition;
+        this.cursorPos = cursorPos;
+    }
 
-	public Rect getScreenPosition() {
-		return screenPosition;
-	}
+    public Rect getScreenPosition() {
+        return screenPosition;
+    }
 
-	public void setScreenPosition(Rect screenPosition) {
-		this.screenPosition = screenPosition;
-	}
+    public void setScreenPosition(Rect screenPosition) {
+        this.screenPosition = screenPosition;
+    }
 
-	public Point getCursorPos() {
-		return cursorPos;
-	}
+    public Point getCursorPos() {
+        return cursorPos;
+    }
 
-	public void setCursorPos(Point cursorPos) {
-		this.cursorPos = cursorPos;
-	}
+    public void setCursorPos(Point cursorPos) {
+        this.cursorPos = cursorPos;
+    }
 }

@@ -20,10 +20,10 @@
 package org.synergy.base.exceptions;
 
 public class NoEventAvailableException extends Exception {
-	private static final long serialVersionUID = 7835619124453920789L;
+    private static final long serialVersionUID = 7835619124453920789L;
 
-	public NoEventAvailableException (String message) {
-		super (message);
-	}
+    public NoEventAvailableException(String message) {
+        super(message);
+    }
 
 }

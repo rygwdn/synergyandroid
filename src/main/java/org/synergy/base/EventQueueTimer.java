@@ -22,64 +22,63 @@ package org.synergy.base;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class EventQueueTimer { 
+public class EventQueueTimer {
 
-	// Do it once?
-	boolean oneShot;
-	
-	// The target for the event
-	Object target;
-	
-	// What will run when the timer is fired from the Event Queue
-	EventJobInterface job;
-	
-	Timer timer;
-		
-	public EventQueueTimer (double timeout, boolean oneShot, Object target, EventJobInterface job) {
-		if (job == null || target == null) {
-			throw new IllegalArgumentException ("Target and job must not be null");
-		}
-		
-		this.oneShot = oneShot;
-		this.target = target;
-		this.job = job;
-		
-		this.timer = new Timer ();
-		timer.schedule (new TimerEventTask (), (long)(timeout * 1000.0));
-	}
+    // Do it once?
+    boolean oneShot;
+
+    // The target for the event
+    Object target;
+
+    // What will run when the timer is fired from the Event Queue
+    EventJobInterface job;
+
+    Timer timer;
+
+    public EventQueueTimer(double timeout, boolean oneShot, Object target, EventJobInterface job) {
+        if (job == null || target == null) {
+            throw new IllegalArgumentException("Target and job must not be null");
+        }
+
+        this.oneShot = oneShot;
+        this.target = target;
+        this.job = job;
+
+        this.timer = new Timer();
+        timer.schedule(new TimerEventTask(), (long) (timeout * 1000.0));
+    }
 
     /**
-      * Cancel a running timer
-      */
-    public void cancel () {
+     * Cancel a running timer
+     */
+    public void cancel() {
         if (timer != null) {
-            timer.cancel ();
+            timer.cancel();
         }
     }
-	
-	/**
-	 * This is the actual task the timer will perform. 
-	 *  This task will take the EventJob and create a new
-	 *  timer event and put it onto the EventQueue.  The Event Queue will
-	 *  actually handle the dispatching of the job
-	 *  
-	 *  Hmm. Scratch that?  Just run the damn thing?
-	 *  
-	 */
-	private class TimerEventTask extends TimerTask {
-		public void run () {
-			job.run (new Event (EventType.TIMER, target));
-			/*Log.debug ("Timer fired");
+
+    /**
+     * This is the actual task the timer will perform.
+     * This task will take the EventJob and create a new
+     * timer event and put it onto the EventQueue.  The Event Queue will
+     * actually handle the dispatching of the job
+     * <p/>
+     * Hmm. Scratch that?  Just run the damn thing?
+     */
+    private class TimerEventTask extends TimerTask {
+        public void run() {
+            job.run(new Event(EventType.TIMER, target));
+            /*Log.debug ("Timer fired");
 			
 			//EventQueue.getInstance ().adoptHandler (EventType.TIMER, target, job);
 			EventQueue.getInstance ().addEvent (new Event (EventType.TIMER, target)); //, null, Event.Flags.DELIVER_IMMEDIATELY));
 			*/
-			
-			if (!oneShot) {
-				timer.cancel ();
-			}
-		}
-	}
+
+            if (!oneShot) {
+                timer.cancel();
+            }
+        }
+    }
 	
 	
  /*   private EventQueueTimer timer;

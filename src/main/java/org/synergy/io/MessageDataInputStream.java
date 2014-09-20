@@ -25,38 +25,39 @@ import java.io.InputStream;
 
 public class MessageDataInputStream extends DataInputStream {
 
-	public MessageDataInputStream (InputStream in) {
-		super (in);
-	}
-	
-	/**
-	 * Read in a string.  First reads in the string length and then the string
-	 */
-	public String readString () throws IOException {
-		int stringLength = readInt ();
-		
-		// Read in the bytes and convert to a string
-		byte [] stringBytes = new byte [stringLength];
-		read (stringBytes, 0, stringBytes.length);
-		return new String (stringBytes);
-	}
-	
-	
-	/**
-	 * Read an expected string from the stream
-	 * @throws IOException if expected string is not read
-	 */
-	public void readExpectedString (String expectedString) throws IOException {
-		byte [] stringBytes = new byte [expectedString.length()];
-		
-		// Read in the bytes and convert to a string
-		read (stringBytes, 0, stringBytes.length);
-		String readString = new String (stringBytes);
-		
-		if (readString.equals(expectedString) == false) {
-			throw new IOException ("Expected string " + expectedString + " not found.  Found: " + readString);
-		}
-	}
-	
-	
+    public MessageDataInputStream(InputStream in) {
+        super(in);
+    }
+
+    /**
+     * Read in a string.  First reads in the string length and then the string
+     */
+    public String readString() throws IOException {
+        int stringLength = readInt();
+
+        // Read in the bytes and convert to a string
+        byte[] stringBytes = new byte[stringLength];
+        read(stringBytes, 0, stringBytes.length);
+        return new String(stringBytes);
+    }
+
+
+    /**
+     * Read an expected string from the stream
+     *
+     * @throws IOException if expected string is not read
+     */
+    public void readExpectedString(String expectedString) throws IOException {
+        byte[] stringBytes = new byte[expectedString.length()];
+
+        // Read in the bytes and convert to a string
+        read(stringBytes, 0, stringBytes.length);
+        String readString = new String(stringBytes);
+
+        if (readString.equals(expectedString) == false) {
+            throw new IOException("Expected string " + expectedString + " not found.  Found: " + readString);
+        }
+    }
+
+
 }

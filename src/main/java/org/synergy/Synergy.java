@@ -19,6 +19,14 @@
  */
 package org.synergy;
 
+import android.app.Activity;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.Display;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import org.synergy.base.Event;
 import org.synergy.base.EventQueue;
 import org.synergy.base.EventType;
@@ -30,127 +38,119 @@ import org.synergy.net.NetworkAddress;
 import org.synergy.net.SocketFactoryInterface;
 import org.synergy.net.TCPSocketFactory;
 
-import android.app.Activity;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.Display;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
-
 public class Synergy extends Activity {
-	
-	private final static String PROP_clientName = "clientName";
-	private final static String PROP_serverHost = "serverHost";
-	private final static String PROP_deviceName = "deviceName";
-	
-	private Thread mainLoopThread = null;
 
-	static {
-		System.loadLibrary ("synergy-jni");
-	}
-	
-	private class MainLoopThread extends Thread {
-		
-		public void run () {
-			try {
-		        Event event = new Event ();
-		        event = EventQueue.getInstance ().getEvent (event, -1.0);
-		        Log.note ("Event grabbed");
-		        while (event.getType () != EventType.QUIT && mainLoopThread == Thread.currentThread()) {
-		            EventQueue.getInstance ().dispatchEvent (event);
-		            // TODO event.deleteData ();
-		            event = EventQueue.getInstance ().getEvent (event, -1.0);
-		            Log.note ("Event grabbed");
-		        } 
-				mainLoopThread = null;
-			} catch (Exception e) {
-				e.printStackTrace ();
-			} finally {
-				Injection.stop();
-			}
-		}
-	}
-	
-	
-    /** Called when the activity is first created. */
+    private final static String PROP_clientName = "clientName";
+    private final static String PROP_serverHost = "serverHost";
+    private final static String PROP_deviceName = "deviceName";
+
+    private Thread mainLoopThread = null;
+
+    static {
+        System.loadLibrary("synergy-jni");
+    }
+
+    /**
+     * Called when the activity is first created.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
-       
+
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         String clientName = preferences.getString(PROP_clientName, null);
         if (clientName != null) {
-        	((EditText) findViewById (R.id.clientNameEditText)).setText(clientName);
+            ((EditText) findViewById(R.id.clientNameEditText)).setText(clientName);
         }
-    	String serverHost = preferences.getString(PROP_serverHost, null);
+        String serverHost = preferences.getString(PROP_serverHost, null);
         if (serverHost != null) {
-        	((EditText) findViewById (R.id.serverHostEditText)).setText(serverHost);
+            ((EditText) findViewById(R.id.serverHostEditText)).setText(serverHost);
         }
-        
-        final Button connectButton = (Button) findViewById (R.id.connectButton);    
-        connectButton.setOnClickListener (new View.OnClickListener() {
-			public void onClick (View arg) {
-				connect();
-			}
-		});
-        
-        Log.setLogLevel (Log.Level.INFO);
-        
-        Log.debug ("Client starting....");
+
+        final Button connectButton = (Button) findViewById(R.id.connectButton);
+        connectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg) {
+                connect();
+            }
+        });
+
+        Log.setLogLevel(Log.Level.INFO);
+
+        Log.debug("Client starting....");
 
         try {
-			Injection.setPermissionsForInputDevice();
-		} catch (Exception e) {
-			// TODO handle exception
-		}
+            Injection.setPermissionsForInputDevice();
+        } catch (Exception e) {
+            // TODO handle exception
+        }
     }
-    
-    private void connect () {
-    	
-    	String clientName = ((EditText) findViewById (R.id.clientNameEditText)).getText().toString();
-    	String ipAddress = ((EditText) findViewById (R.id.serverHostEditText)).getText().toString();
-    	String portStr = ((EditText) findViewById(R.id.serverPortEditText)).getText().toString();
-    	int port = Integer.parseInt(portStr);
-    	String deviceName = ((EditText) findViewById(R.id.inputDeviceEditText)).getText().toString();
-    	
-    	SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-    	SharedPreferences.Editor preferencesEditor = preferences.edit();
-    	preferencesEditor.putString(PROP_clientName, clientName);
-    	preferencesEditor.putString(PROP_serverHost, ipAddress);
-    	preferencesEditor.putString(PROP_deviceName, deviceName);
-	preferencesEditor.apply();
-    	
-        try {
-       	   	NetworkAddress serverAddress = new NetworkAddress (ipAddress, port);
-        	Injection.startInjection(deviceName);
-        	BasicScreen basicScreen = new BasicScreen();
-        	WindowManager wm = getWindowManager();
-        	Display display = wm.getDefaultDisplay ();
-        	basicScreen.setShape (display.getWidth (), display.getHeight ());
 
-        	//PlatformIndependentScreen screen = new PlatformIndependentScreen(basicScreen);
-            
+    private void connect() {
+
+        String clientName = ((EditText) findViewById(R.id.clientNameEditText)).getText().toString();
+        String ipAddress = ((EditText) findViewById(R.id.serverHostEditText)).getText().toString();
+        String portStr = ((EditText) findViewById(R.id.serverPortEditText)).getText().toString();
+        int port = Integer.parseInt(portStr);
+        String deviceName = ((EditText) findViewById(R.id.inputDeviceEditText)).getText().toString();
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor preferencesEditor = preferences.edit();
+        preferencesEditor.putString(PROP_clientName, clientName);
+        preferencesEditor.putString(PROP_serverHost, ipAddress);
+        preferencesEditor.putString(PROP_deviceName, deviceName);
+        preferencesEditor.apply();
+
+        try {
+            NetworkAddress serverAddress = new NetworkAddress(ipAddress, port);
+            Injection.startInjection(deviceName);
+            BasicScreen basicScreen = new BasicScreen();
+            WindowManager wm = getWindowManager();
+            Display display = wm.getDefaultDisplay();
+            basicScreen.setShape(display.getWidth(), display.getHeight());
+
+            //PlatformIndependentScreen screen = new PlatformIndependentScreen(basicScreen);
+
             Log.debug("Hostname: " + clientName);
             SocketFactoryInterface socketFactory = new TCPSocketFactory();
-			Client client = new Client(getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
-			client.connect ();
+            Client client = new Client(getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
+            client.connect();
 
-			if (mainLoopThread == null) {
-				mainLoopThread = new MainLoopThread();
-				mainLoopThread.start();
-			}
-			
+            if (mainLoopThread == null) {
+                mainLoopThread = new MainLoopThread();
+                mainLoopThread.start();
+            }
+
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
             String message = "Connection Failed";
             if (e.getLocalizedMessage() != null) {
                 message += ":\n" + e.getLocalizedMessage();
             }
-	    ((EditText) findViewById (R.id.outputEditText)).setText(message);
+            ((EditText) findViewById(R.id.outputEditText)).setText(message);
+        }
+    }
+
+    private class MainLoopThread extends Thread {
+
+        public void run() {
+            try {
+                Event event = new Event();
+                event = EventQueue.getInstance().getEvent(event, -1.0);
+                Log.note("Event grabbed");
+                while (event.getType() != EventType.QUIT && mainLoopThread == Thread.currentThread()) {
+                    EventQueue.getInstance().dispatchEvent(event);
+                    // TODO event.deleteData ();
+                    event = EventQueue.getInstance().getEvent(event, -1.0);
+                    Log.note("Event grabbed");
+                }
+                mainLoopThread = null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                Injection.stop();
+            }
         }
     }
 }

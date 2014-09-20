@@ -19,14 +19,14 @@
  */
 package org.synergy.net;
 
-import java.io.IOException;
-
 import org.synergy.io.Stream;
+
+import java.io.IOException;
 
 public interface DataSocketInterface extends Stream, SocketInterface {
 
-    public abstract void connect (NetworkAddress address) throws IOException;
-    
-    public abstract boolean isReady ();
+    public abstract void connect(NetworkAddress address) throws IOException;
+
+    public abstract boolean isReady();
 
 }

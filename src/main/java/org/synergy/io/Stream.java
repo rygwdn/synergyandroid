@@ -25,13 +25,13 @@ import java.io.OutputStream;
 
 public interface Stream {
 
-	public void close ();
-	
-	public boolean isReady ();
+    public void close();
 
-    public Object getEventTarget ();
-    
-    public InputStream getInputStream () throws IOException;
-    
-    public OutputStream getOutputStream () throws IOException;
+    public boolean isReady();
+
+    public Object getEventTarget();
+
+    public InputStream getInputStream() throws IOException;
+
+    public OutputStream getOutputStream() throws IOException;
 }

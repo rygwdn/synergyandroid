@@ -27,16 +27,16 @@ public class MouseDownMessage extends Message {
 
     byte buttonID = 0;
 
-    public MouseDownMessage (DataInputStream din) throws IOException {
-        super ();
-        buttonID = din.readByte ();
+    public MouseDownMessage(DataInputStream din) throws IOException {
+        super();
+        buttonID = din.readByte();
     }
 
-    public int getButtonID () {
+    public int getButtonID() {
         return (int) buttonID;
     }
 
-    public String toString () {
+    public String toString() {
         return "MouseDownMessage:" + buttonID;
     }
 
