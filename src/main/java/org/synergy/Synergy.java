@@ -25,7 +25,6 @@ import org.synergy.base.EventType;
 import org.synergy.base.Log;
 import org.synergy.client.Client;
 import org.synergy.common.screens.BasicScreen;
-//import org.synergy.common.screens.PlatformIndependentScreen;
 import org.synergy.injection.Injection;
 import org.synergy.net.NetworkAddress;
 import org.synergy.net.SocketFactoryInterface;
@@ -47,7 +46,7 @@ public class Synergy extends Activity {
 	private final static String PROP_deviceName = "deviceName";
 	
 	private Thread mainLoopThread = null;
-	
+
 	static {
 		System.loadLibrary ("synergy-jni");
 	}
@@ -79,6 +78,7 @@ public class Synergy extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main);
        
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
@@ -94,7 +94,7 @@ public class Synergy extends Activity {
         final Button connectButton = (Button) findViewById (R.id.connectButton);    
         connectButton.setOnClickListener (new View.OnClickListener() {
 			public void onClick (View arg) {
-				connect ();
+				connect();
 			}
 		});
         
@@ -122,28 +122,21 @@ public class Synergy extends Activity {
     	preferencesEditor.putString(PROP_clientName, clientName);
     	preferencesEditor.putString(PROP_serverHost, ipAddress);
     	preferencesEditor.putString(PROP_deviceName, deviceName);
-    	preferencesEditor.commit();
+	preferencesEditor.apply();
     	
         try {
-        	SocketFactoryInterface socketFactory = new TCPSocketFactory();
        	   	NetworkAddress serverAddress = new NetworkAddress (ipAddress, port);
-        	serverAddress.resolve ();
-
         	Injection.startInjection(deviceName);
-
         	BasicScreen basicScreen = new BasicScreen();
-        	
         	WindowManager wm = getWindowManager();
-        	 
         	Display display = wm.getDefaultDisplay ();
         	basicScreen.setShape (display.getWidth (), display.getHeight ());
-        	
-        	
+
         	//PlatformIndependentScreen screen = new PlatformIndependentScreen(basicScreen);
             
-            Log.debug ("Hostname: " + clientName);
-            
-			Client client = new Client (getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
+            Log.debug("Hostname: " + clientName);
+            SocketFactoryInterface socketFactory = new TCPSocketFactory();
+			Client client = new Client(getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
 			client.connect ();
 
 			if (mainLoopThread == null) {

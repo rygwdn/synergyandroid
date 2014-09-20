@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import android.os.Handler;
 import org.synergy.base.Event;
 import org.synergy.base.EventJobInterface;
 import org.synergy.base.EventQueue;
@@ -87,43 +88,65 @@ public class Client implements EventTarget {
             return;
         }
 
-		try {
-			serverAddress.resolve ();
-			
-			if (serverAddress.getAddress () != null) {
-				Log.debug ("Connecting to: '" +
-						serverAddress.getHostname () + "': " +
-						serverAddress.getAddress () + ":" +
-						serverAddress.getPort ());
-			}
-			
-            // create the socket
-	        DataSocketInterface socket = socketFactory.create ();
-    
-            // filter socket messages, including a packetizing filter
-            stream = socket;
-            if (streamFilterFactory != null) {
-                // TODO stream = streamFilterFactory.create (stream, true);
+        final Handler handler = new android.os.Handler();
+
+        // Do the network setup work a background thread
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverAddress.resolve ();
+
+                    if (serverAddress.getAddress () != null) {
+                        Log.debug ("Connecting to: '" +
+                                serverAddress.getHostname () + "': " +
+                                serverAddress.getAddress () + ":" +
+                                serverAddress.getPort ());
+                    }
+
+                    // create the socket
+                    DataSocketInterface socket = socketFactory.create ();
+
+                    // filter socket messages, including a packetizing filter
+                    stream = socket;
+                    if (streamFilterFactory != null) {
+                        // TODO stream = streamFilterFactory.create (stream, true);
+                    }
+
+                    // connect
+                    Log.debug ("connecting to server");
+
+                    setupConnecting ();
+                    setupTimer ();
+
+                    socket.connect (serverAddress);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            final Toast toast = Toast.makeText(context, "Connected to " + serverAddress.getHostname()
+                                    + ":" + serverAddress.getPort(), Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    });
+                } catch (IOException e) {
+                    String detail = "";
+                    if (e.getLocalizedMessage() != null) {
+                        detail = ": " + e.getLocalizedMessage();
+                    }
+                    final String errorMessage = "Failed to connect to " + serverAddress.getHostname()
+                            + ":" + serverAddress.getPort() + detail;
+                    Log.error(errorMessage);
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            final Toast toast = Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT);
+                            toast.show();
+                        }
+                    });
+                }
             }
-
-            // connect
-            Log.debug ("connecting to server");
-
-            setupConnecting ();
-            setupTimer ();
-
-            socket.connect (serverAddress);
-            
-            final Toast toast = Toast.makeText(context, "Connected to " + serverAddress.getHostname()
-                    + ":" + serverAddress.getPort(), Toast.LENGTH_SHORT);
-            toast.show();
-		} catch (IOException e) {
-			final String errorMessage = "Failed to connect to " + serverAddress.getHostname()
-					+ ":" + serverAddress.getPort();
-			Log.error(errorMessage);
-			final Toast toast = Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT);
-			toast.show();
-		}
+        }).start();
 	}
 	
 	public void disconnect (String msg) {
