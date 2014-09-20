@@ -7,4 +7,8 @@
     <string name="hostdesc">Server IP/Hostname:</string>
     <string name="host">igsarmewmactck</string>
     <string name="connect">Connect</string>
+    <string name="server_port_text">Server Port:</string>
+    <string name="server_port_default">24800</string>
+    <string name="device_name_label">Input device name:</string>
+    <string name="device_name_default">touchscreen</string>
 </resources>
