@@ -17,6 +17,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+// TODO: look into https://code.google.com/p/android-event-injector/
+
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>

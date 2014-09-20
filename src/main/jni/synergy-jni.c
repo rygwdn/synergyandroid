@@ -190,7 +190,7 @@ static void build_key_translation_table () {
     keyTranslation [63238] = KEY_BACK;   // F3 to BACK
     keyTranslation [63239] = KEY_SEARCH; // F4 to SEARCH
     keyTranslation [63240] = KEY_POWER;  // F5 to POWER
-    
+
     keyTranslation [61374] = KEY_HOME;   // F1 to HOME
     keyTranslation [61375] = KEY_MENU;   // F2 to MENU
     keyTranslation [61376] = KEY_BACK;   // F3 to BACK
@@ -210,6 +210,7 @@ void Java_org_synergy_injection_Injection_keydown (JNIEnv *env, jobject thiz, ji
     int translatedKey = keycode (key);
     if (translatedKey < 0) {
         // Unknown key...
+        __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keydown");
         return;
     }
 
@@ -220,6 +221,7 @@ void Java_org_synergy_injection_Injection_keyup (JNIEnv *env, jobject thiz, jint
     int translatedKey = keycode (key);
     if (translatedKey < 0) {
         // Unknown key...
+        __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keyup");
         return;
     }
     suinput_release (uinput_fd, translatedKey);
