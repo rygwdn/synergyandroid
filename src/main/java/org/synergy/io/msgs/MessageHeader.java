@@ -19,6 +19,8 @@
  */
 package org.synergy.io.msgs;
 
+import android.util.Log;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -55,12 +57,18 @@ public class MessageHeader {
 	 */
 	public MessageHeader (DataInputStream din) throws IOException {
 		int messageSize = din.readInt ();
-		
-		
-		byte messageTypeBytes [] = new byte [MESSAGE_TYPE_SIZE];
-        din.read (messageTypeBytes, 0, MESSAGE_TYPE_SIZE);
-        this.type = MessageType.fromString (new String (messageTypeBytes));
-		this.size = MESSAGE_TYPE_SIZE;
+        if (messageSize == 0) {
+            this.type = MessageType.CNOOP;
+            this.size = MESSAGE_TYPE_SIZE;
+            this.dataSize = 0;
+            Log.w(MessageHeader.class.getSimpleName(), "Got null message?");
+            return;
+        }
+
+        byte messageTypeBytes[] = new byte[MESSAGE_TYPE_SIZE];
+        din.read(messageTypeBytes, 0, MESSAGE_TYPE_SIZE);
+        this.type = MessageType.fromString(new String(messageTypeBytes));
+        this.size = MESSAGE_TYPE_SIZE;
         this.dataSize = messageSize - this.size;
 	}
 	
