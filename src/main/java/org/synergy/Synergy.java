@@ -146,7 +146,11 @@ public class Synergy extends Activity {
 			
         } catch (Exception e) {
         	e.printStackTrace();
-        	((EditText) findViewById (R.id.outputEditText)).setText("Connection Failed.");
+            String message = "Connection Failed";
+            if (e.getLocalizedMessage() != null) {
+                message += ":\n" + e.getLocalizedMessage();
+            }
+	    ((EditText) findViewById (R.id.outputEditText)).setText(message);
         }
     }
 }
