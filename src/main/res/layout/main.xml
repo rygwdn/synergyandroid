@@ -53,10 +53,19 @@
               android:text="@string/device_name_default"
               android:id="@+id/inputDeviceEditText"/>
 
-    <Button android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connect"
-            android:id="@+id/connectButton"/>
+    <LinearLayout android:layout_width="fill_parent"
+                  android:layout_height="wrap_content">
+        <Button android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/connect"
+                android:id="@+id/connectButton"/>
+
+        <Button android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="@string/disconnect"
+                android:id="@+id/disconnectButton"/>
+    </LinearLayout>
 
     <EditText android:id="@+id/outputEditText"
               android:layout_width="fill_parent"

@@ -11,4 +11,6 @@
     <string name="server_port_default">24800</string>
     <string name="device_name_label">Input device name:</string>
     <string name="device_name_default">touchscreen</string>
+    <string name="synergy_connected">Synergy Connected</string>
+    <string name="disconnect">Disconnect</string>
 </resources>

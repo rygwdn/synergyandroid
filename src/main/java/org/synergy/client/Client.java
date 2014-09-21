@@ -115,14 +115,12 @@ public class Client implements EventTarget {
 
                     socket.connect(serverAddress);
 
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            final Toast toast = Toast.makeText(context, "Connected to " + serverAddress.getHostname()
-                                    + ":" + serverAddress.getPort(), Toast.LENGTH_SHORT);
-                            toast.show();
-                        }
-                    });
+
+                    final String message =  "Connected to " + serverAddress.getHostname() + ":" + serverAddress.getPort();
+                    Log.info(message); // TODO -> toast
+
+//                  final Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+//                  toast.show();
                 } catch (IOException e) {
                     String detail = "";
                     if (e.getLocalizedMessage() != null) {
@@ -130,14 +128,10 @@ public class Client implements EventTarget {
                     }
                     final String errorMessage = "Failed to connect to " + serverAddress.getHostname()
                             + ":" + serverAddress.getPort() + detail;
-                    Log.error(errorMessage);
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            final Toast toast = Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT);
-                            toast.show();
-                        }
-                    });
+                    Log.error(errorMessage); // TODO -> toast
+
+//                  final Toast toast = Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT);
+//                  toast.show();
                 }
             }
         }).start();

@@ -22,33 +22,18 @@ package org.synergy;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import org.synergy.base.Event;
-import org.synergy.base.EventQueue;
-import org.synergy.base.EventType;
 import org.synergy.base.Log;
-import org.synergy.client.Client;
-import org.synergy.common.screens.BasicScreen;
 import org.synergy.injection.Injection;
-import org.synergy.net.NetworkAddress;
-import org.synergy.net.SocketFactoryInterface;
-import org.synergy.net.TCPSocketFactory;
 
 public class Synergy extends Activity {
 
     private final static String PROP_clientName = "clientName";
     private final static String PROP_serverHost = "serverHost";
     private final static String PROP_deviceName = "deviceName";
-
-    private Thread mainLoopThread = null;
-
-    static {
-        System.loadLibrary("synergy-jni");
-    }
 
     /**
      * Called when the activity is first created.
@@ -76,6 +61,13 @@ public class Synergy extends Activity {
             }
         });
 
+        final Button disconnectButton = (Button) findViewById(R.id.disconnectButton);
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg) {
+                disconnect();
+            }
+        });
+
         Log.setLogLevel(Log.Level.INFO);
 
         Log.debug("Client starting....");
@@ -88,7 +80,6 @@ public class Synergy extends Activity {
     }
 
     private void connect() {
-
         String clientName = ((EditText) findViewById(R.id.clientNameEditText)).getText().toString();
         String ipAddress = ((EditText) findViewById(R.id.serverHostEditText)).getText().toString();
         String portStr = ((EditText) findViewById(R.id.serverPortEditText)).getText().toString();
@@ -102,56 +93,10 @@ public class Synergy extends Activity {
         preferencesEditor.putString(PROP_deviceName, deviceName);
         preferencesEditor.apply();
 
-        try {
-            NetworkAddress serverAddress = new NetworkAddress(ipAddress, port);
-            Injection.startInjection(deviceName);
-            BasicScreen basicScreen = new BasicScreen();
-            WindowManager wm = getWindowManager();
-            Display display = wm.getDefaultDisplay();
-            basicScreen.setShape(display.getWidth(), display.getHeight());
-
-            //PlatformIndependentScreen screen = new PlatformIndependentScreen(basicScreen);
-
-            Log.debug("Hostname: " + clientName);
-            SocketFactoryInterface socketFactory = new TCPSocketFactory();
-            Client client = new Client(getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
-            client.connect();
-
-            if (mainLoopThread == null) {
-                mainLoopThread = new MainLoopThread();
-                mainLoopThread.start();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            String message = "Connection Failed";
-            if (e.getLocalizedMessage() != null) {
-                message += ":\n" + e.getLocalizedMessage();
-            }
-            ((EditText) findViewById(R.id.outputEditText)).setText(message);
-        }
+        SynergyService.connect(getApplicationContext(), clientName, ipAddress, port, deviceName);
     }
 
-    // TODO: android.os.Handler?
-    private class MainLoopThread extends Thread {
-
-        public void run() {
-            try {
-                Event event = new Event();
-                event = EventQueue.getInstance().getEvent(event, -1.0);
-                Log.note("Event grabbed");
-                while (event.getType() != EventType.QUIT && mainLoopThread == Thread.currentThread()) {
-                    EventQueue.getInstance().dispatchEvent(event);
-                    // TODO event.deleteData ();
-                    event = EventQueue.getInstance().getEvent(event, -1.0);
-                    Log.note("Event grabbed");
-                }
-                mainLoopThread = null;
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                Injection.stop();
-            }
-        }
+    private void disconnect() {
+        SynergyService.disconnect();
     }
 }
