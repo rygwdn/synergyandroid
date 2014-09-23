@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Synergy</string>
-
     <string name="clientdesc">Synergy Client Name:</string>
     <string name="client">android</string>
     <string name="hostdesc">Server IP/Hostname:</string>
@@ -13,4 +12,8 @@
     <string name="device_name_default">touchscreen</string>
     <string name="synergy_connected">Synergy Connected</string>
     <string name="disconnect">Disconnect</string>
+    <string name="ui_connecting">Connecting to %s</string>
+    <string name="ui_connected">Connected to %s</string>
+    <string name="ui_disconnected">Disconnected from %s</string>
+    <string name="ui_connection_failed">Connection Failed</string>
 </resources>

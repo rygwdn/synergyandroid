@@ -48,6 +48,8 @@ public class SynergyService extends IntentService {
 
     private boolean mRunning = false;
     private Client mClient;
+    private IToastListener toastListener;
+    private IUILogListener uiLogListener;
 
     /**
      * Starts this service to connect with the given parameters. If
@@ -63,6 +65,26 @@ public class SynergyService extends IntentService {
         intent.putExtra(EXTRA_IP_ADDRESS, ipAddress);
         intent.putExtra(EXTRA_PORT, port);
         context.startService(intent);
+    }
+
+    public void setToastListener(IToastListener toastListener) {
+        this.toastListener = toastListener;
+    }
+
+    private void showToast(String message) {
+        if (toastListener != null) {
+            toastListener.onShowToast(message);
+        }
+    }
+
+    public void setUILogListener(IUILogListener UILogListener) {
+        this.uiLogListener = UILogListener;
+    }
+
+    private void addUILog(String message) {
+        if (uiLogListener != null) {
+            uiLogListener.onLogAdded(message);
+        }
     }
 
     public class LocalBinder extends Binder {
@@ -103,13 +125,13 @@ public class SynergyService extends IntentService {
         return mBinder;
     }
 
-    private Notification buildForegroundNotification(String host) {
+    private Notification buildForegroundNotification(String message) {
         return new Notification.Builder(this)
                 .setOngoing(true)
                 .setContentTitle(getString(R.string.synergy_connected))
-                .setContentText("Connected to " + host)
+                .setContentText(message)
                 .setSmallIcon(R.drawable.icon)
-                .setTicker("Connected to " + host)
+                .setTicker(message)
                 .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, Synergy.class), 0))
                 .build();
     }
@@ -121,7 +143,9 @@ public class SynergyService extends IntentService {
             event = EventQueue.getInstance().getEvent(event, -1.0);
             Log.info("Start loop");
 
-            while (event.getType() != EventType.QUIT && mRunning) {
+            while (event.getType() != EventType.QUIT
+                    && event.getType() != EventType.CLIENT_DISCONNECTED
+                    && mRunning) {
                 Log.debug("About to dispatch: " + event.toString());
                 EventQueue.getInstance().dispatchEvent(event);
                 if (!mRunning) return;
@@ -147,7 +171,10 @@ public class SynergyService extends IntentService {
 
     private void handleActionConnect(String clientName, String deviceName, String host, int port) {
         try {
-            // TODO: message to UI here to indicate that we're connecting..
+            String uiMessage = String.format(getString(R.string.ui_connecting), host);
+            showToast(uiMessage);
+            addUILog(uiMessage);
+
             NetworkAddress serverAddress = new NetworkAddress(host, port);
             Injection.startInjection(deviceName);
             BasicScreen basicScreen = new BasicScreen();
@@ -160,24 +187,33 @@ public class SynergyService extends IntentService {
             mClient.connect();
 
             Log.info("Connected to " + host);
-            startForeground(FOREGROUND_ID, buildForegroundNotification(host));
+
+            String connectedMessage = String.format(getString(R.string.ui_connected), host);
+            addUILog(connectedMessage);
+            startForeground(FOREGROUND_ID, buildForegroundNotification(connectedMessage));
 
             runLoop();
 
         } catch (Exception e) {
             e.printStackTrace();
 
-            String message = "Connection Failed";
+            String message = getString(R.string.ui_connection_failed);
+
+            String detailMessage = null;
             if (e.getLocalizedMessage() != null) {
-                message += ": " + e.getLocalizedMessage();
+                detailMessage = message + ": " + e.getLocalizedMessage();
             }
 
-            // TODO: send message back to client!
-            // https://developer.android.com/training/run-background-service/report-status.html
-            Log.error(message); // TODO -> toast?
+            Log.error(detailMessage);
+            showToast(message);
+            addUILog(detailMessage);
 
         } finally {
             stopForeground(true);
+
+            String disconnectedMessage = String.format(getString(R.string.ui_disconnected), host);
+            showToast(disconnectedMessage);
+            addUILog(disconnectedMessage);
         }
     }
 }

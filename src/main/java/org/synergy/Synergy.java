@@ -24,18 +24,19 @@ import android.content.*;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import org.synergy.base.Log;
 import org.synergy.injection.Injection;
 
-public class Synergy extends Activity {
+public class Synergy extends Activity implements IToastListener, IUILogListener {
 
     private final static String PROP_clientName = "clientName";
     private final static String PROP_serverHost = "serverHost";
     private final static String PROP_deviceName = "deviceName";
+
+    private EditText outputText;
 
     private boolean mIsBound = false;
     private SynergyService mBoundService;
@@ -45,14 +46,14 @@ public class Synergy extends Activity {
             mBoundService = ((SynergyService.LocalBinder)service).getService();
             if (mBoundService != null) {
                 Log.info("Client says service connected!");
-                Toast.makeText(Synergy.this, "Client says service connected!", Toast.LENGTH_SHORT).show();
+                mBoundService.setToastListener(Synergy.this);
+                mBoundService.setUILogListener(Synergy.this);
             }
         }
 
         public void onServiceDisconnected(ComponentName className) {
             mBoundService = null;
             Log.info("Client says service disconnected!");
-            Toast.makeText(Synergy.this, "Client says service disconnected!", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -91,6 +92,8 @@ public class Synergy extends Activity {
         });
 
         Log.setLogLevel(Log.Level.INFO);
+        outputText = (EditText) findViewById(R.id.outputEditText);
+
 
         Log.debug("Client starting....");
 
@@ -122,7 +125,6 @@ public class Synergy extends Activity {
     }
 
     private void disconnect() {
-        doBindService();
         if (mBoundService != null) {
             mBoundService.disconnect();
         } else {
@@ -147,5 +149,26 @@ public class Synergy extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         doUnbindService();
+    }
+
+    @Override
+    public void onShowToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(Synergy.this, message, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
+    }
+
+    @Override
+    public void onLogAdded(final String log) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                outputText.append(log + "\n");
+            }
+        });
     }
 }

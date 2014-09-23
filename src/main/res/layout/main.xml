@@ -68,10 +68,12 @@
     </LinearLayout>
 
     <EditText android:id="@+id/outputEditText"
+              android:typeface="monospace"
+              android:editable="false"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
               android:background="@android:drawable/edit_text"
               android:textColor="@android:color/widget_edittext_dark"
-              android:gravity="fill"/>
+              android:gravity="top"/>
 
 </LinearLayout>
