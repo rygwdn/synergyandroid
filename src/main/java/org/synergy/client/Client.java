@@ -46,6 +46,7 @@ public class Client implements EventTarget {
     private String name;
     private NetworkAddress serverAddress;
     private Stream stream;
+    private DataSocketInterface socket;
     private SocketFactoryInterface socketFactory;
     private StreamFilterFactoryInterface streamFilterFactory;
     private ScreenInterface screen;
@@ -82,8 +83,6 @@ public class Client implements EventTarget {
             return;
         }
 
-        final Handler handler = new android.os.Handler();
-
         // Do the network setup work a background thread
         new Thread(new Runnable() {
             @Override
@@ -99,7 +98,7 @@ public class Client implements EventTarget {
                     }
 
                     // create the socket
-                    DataSocketInterface socket = socketFactory.create();
+                    socket = socketFactory.create();
 
                     // filter socket messages, including a packetizing filter
                     stream = socket;
@@ -141,11 +140,20 @@ public class Client implements EventTarget {
         cleanupTimer();
         cleanupScreen();
         cleanupConnecting();
+        server.stop();
+
         if (msg != null) {
             sendConnectionFailedEvent(msg);
         } else {
             sendEvent(EventType.CLIENT_DISCONNECTED, null);
         }
+
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.info("Did disconnect");
     }
 
     private void setupConnecting() {
@@ -178,8 +186,6 @@ public class Client implements EventTarget {
     private void setupTimer() {
         // TODO
         //assert (timer == null);
-
-
     }
 
     private void handleConnected() {

@@ -72,7 +72,8 @@ public class TCPSocket implements DataSocketInterface {
     public void bind(final NetworkAddress address) {
     }
 
-    public void close() {
+    public void close() throws IOException {
+        socket.close();
     }
 
     public boolean isReady() {

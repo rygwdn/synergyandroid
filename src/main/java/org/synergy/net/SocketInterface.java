@@ -20,11 +20,13 @@
 package org.synergy.net;
 
 
+import java.io.IOException;
+
 public interface SocketInterface {
 
     public void bind(final NetworkAddress address);
 
-    public void close();
+    public void close() throws IOException;
 
     public Object getEventTarget();
 

@@ -20,12 +20,14 @@
 package org.synergy;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 import org.synergy.base.Log;
 import org.synergy.injection.Injection;
 
@@ -34,6 +36,26 @@ public class Synergy extends Activity {
     private final static String PROP_clientName = "clientName";
     private final static String PROP_serverHost = "serverHost";
     private final static String PROP_deviceName = "deviceName";
+
+    private boolean mIsBound = false;
+    private SynergyService mBoundService;
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mBoundService = ((SynergyService.LocalBinder)service).getService();
+            if (mBoundService != null) {
+                Log.info("Client says service connected!");
+                Toast.makeText(Synergy.this, "Client says service connected!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mBoundService = null;
+            Log.info("Client says service disconnected!");
+            Toast.makeText(Synergy.this, "Client says service disconnected!", Toast.LENGTH_SHORT).show();
+        }
+    };
+
 
     /**
      * Called when the activity is first created.
@@ -77,6 +99,8 @@ public class Synergy extends Activity {
         } catch (Exception e) {
             // TODO handle exception
         }
+
+        doBindService();
     }
 
     private void connect() {
@@ -93,10 +117,35 @@ public class Synergy extends Activity {
         preferencesEditor.putString(PROP_deviceName, deviceName);
         preferencesEditor.apply();
 
+        Log.info("Connecting..");
         SynergyService.connect(getApplicationContext(), clientName, ipAddress, port, deviceName);
     }
 
     private void disconnect() {
-        SynergyService.disconnect();
+        doBindService();
+        if (mBoundService != null) {
+            mBoundService.disconnect();
+        } else {
+            Log.error("Unable to connect to service");
+        }
+    }
+
+    void doBindService() {
+        bindService(new Intent(this, SynergyService.class), mConnection, Context.BIND_AUTO_CREATE);
+        mIsBound = true;
+    }
+
+    void doUnbindService() {
+        if (mIsBound) {
+            // Detach our existing connection.
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        doUnbindService();
     }
 }

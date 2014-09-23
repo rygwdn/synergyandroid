@@ -61,12 +61,11 @@ public class ServerProxy {
         // TODO Key modifier table
 
         // handle data on stream
-        EventQueue.getInstance().adoptHandler(EventType.STREAM_INPUT_READY, stream.getEventTarget(),
-                new EventJobInterface() {
-                    public void run(Event event) {
-                        handleData();
-                    }
-                });
+        EventQueue.getInstance().adoptHandler(EventType.STREAM_INPUT_READY, stream.getEventTarget(), new EventJobInterface() {
+            public void run(Event event) {
+                handleData();
+            }
+        });
 
         // send heartbeat
         setKeepAliveRate(KEEP_ALIVE_RATE);
@@ -76,7 +75,15 @@ public class ServerProxy {
                 return parseHandshakeMessage();
             }
         };
+    }
 
+    public void stop() {
+        if (keepAliveAlarmTimer != null) {
+            keepAliveAlarmTimer.cancel();
+            keepAliveAlarmTimer = null;
+        }
+
+        EventQueue.getInstance().removeHandler(EventType.STREAM_INPUT_READY, stream.getEventTarget());
     }
 
     /**
@@ -242,10 +249,13 @@ public class ServerProxy {
 
         try {
             this.din = new DataInputStream(stream.getInputStream());
-            // this.dout = new DataOutputStream (stream.getOutputStream ());
-            // this.oout = new ObjectOutputStream (stream.getOutputStream());
+        } catch (IOException e) {
+            Log.error("Unable to create data stream: " + e.getLocalizedMessage());
+            return;
+        }
 
-            while (true) {
+        while (true) {
+            try {
                 switch (parser.parse()) {
                     case OKAY:
                         break;
@@ -255,10 +265,10 @@ public class ServerProxy {
                     case DISCONNECT:
                         return;
                 }
+            } catch (IOException e) {
+                Log.error("Disconnected: " + e.getLocalizedMessage());
+                return;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            // TODO
         }
     }
 

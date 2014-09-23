@@ -2,10 +2,13 @@ package org.synergy;
 
 import android.app.IntentService;
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Binder;
+import android.os.IBinder;
 import android.view.Display;
 import android.view.WindowManager;
 import org.synergy.base.Event;
@@ -23,8 +26,6 @@ import org.synergy.net.TCPSocketFactory;
 /**
  * Background service implementing a synergy client.
  */
-// TODO: switch to plain Service so we can have background threads, communication, etc.
-//       see http://developer.android.com/reference/android/app/Service.html
 public class SynergyService extends IntentService {
     private static final String ACTION_CONNECT = "org.synergy.action.CONNECT";
 
@@ -36,9 +37,17 @@ public class SynergyService extends IntentService {
     private static final String EXTRA_PORT = "org.synergy.extra.PORT";
     private static final String EXTRA_DEVICE_NAME = "org.synergy.extra.DEVICE_NAME";
 
+    // This is the object that receives interactions from clients.  See
+    // RemoteService for a more complete example.
+    private final IBinder mBinder = new LocalBinder();
+
+
     static {
         System.loadLibrary("synergy-jni");
     }
+
+    private boolean mRunning = false;
+    private Client mClient;
 
     /**
      * Starts this service to connect with the given parameters. If
@@ -56,8 +65,20 @@ public class SynergyService extends IntentService {
         context.startService(intent);
     }
 
-    public static void disconnect() {
-        // TODO
+    public class LocalBinder extends Binder {
+        SynergyService getService() {
+            return SynergyService.this;
+        }
+    }
+
+    public void disconnect() {
+        if (mRunning) {
+            Log.info("SynergyService disconnecting");
+            mRunning = false;
+            mClient.disconnect("Closed");
+        } else {
+            Log.info("SynergyService not disconnecting (not running)");
+        }
     }
 
     public SynergyService() {
@@ -78,6 +99,10 @@ public class SynergyService extends IntentService {
         }
     }
 
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
     private Notification buildForegroundNotification(String host) {
         return new Notification.Builder(this)
                 .setOngoing(true)
@@ -85,22 +110,29 @@ public class SynergyService extends IntentService {
                 .setContentText("Connected to " + host)
                 .setSmallIcon(R.drawable.icon)
                 .setTicker("Connected to " + host)
-                        // TODO: on click launch UI (?)
+                .setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, Synergy.class), 0))
                 .build();
     }
 
     private void runLoop() throws InvalidMessageException {
         try {
+            mRunning = true;
             Event event = new Event();
             event = EventQueue.getInstance().getEvent(event, -1.0);
-            while (event.getType() != EventType.QUIT) {
+            Log.info("Start loop");
+
+            while (event.getType() != EventType.QUIT && mRunning) {
+                Log.debug("About to dispatch: " + event.toString());
                 EventQueue.getInstance().dispatchEvent(event);
-                // TODO event.deleteData ();
+                if (!mRunning) return;
+
+                Log.debug("About to wait");
                 event = EventQueue.getInstance().getEvent(event, -1.0);
-                Log.info("Event grabbed: " + event.getType().name());
             }
 
         } finally {
+            Log.info("End loop");
+            mRunning = false;
             Injection.stop();
         }
     }
@@ -115,8 +147,7 @@ public class SynergyService extends IntentService {
 
     private void handleActionConnect(String clientName, String deviceName, String host, int port) {
         try {
-            startForeground(FOREGROUND_ID, buildForegroundNotification(host));
-
+            // TODO: message to UI here to indicate that we're connecting..
             NetworkAddress serverAddress = new NetworkAddress(host, port);
             Injection.startInjection(deviceName);
             BasicScreen basicScreen = new BasicScreen();
@@ -125,10 +156,11 @@ public class SynergyService extends IntentService {
             basicScreen.setShape(displayRect.width(), displayRect.height());
 
             SocketFactoryInterface socketFactory = new TCPSocketFactory();
-            Client client = new Client(getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
-            client.connect();
+            mClient = new Client(getApplicationContext(), clientName, serverAddress, socketFactory, null, basicScreen);
+            mClient.connect();
 
-            Log.info("Connected to " + host); // TODO -> toast?
+            Log.info("Connected to " + host);
+            startForeground(FOREGROUND_ID, buildForegroundNotification(host));
 
             runLoop();
 

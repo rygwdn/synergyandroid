@@ -26,11 +26,9 @@ public class TCPListenSocket extends ListenSocketInterface {
     }
 
     public void bind(final NetworkAddress address) {
-
     }
 
     public void close() {
-
     }
 
     public Object getEventTarget() {

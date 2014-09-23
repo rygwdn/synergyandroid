@@ -25,7 +25,7 @@ import java.io.OutputStream;
 
 public interface Stream {
 
-    public void close();
+    public void close() throws IOException;
 
     public boolean isReady();
 
