@@ -22,7 +22,10 @@
 
         <service
             android:name=".SynergyService"
-            android:exported="false" >
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="org.synergy.action.CONNECT" />
+            </intent-filter>
         </service>
     </application>
 

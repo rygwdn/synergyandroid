@@ -27,14 +27,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import org.synergy.base.IToastListener;
+import org.synergy.base.IUILogListener;
 import org.synergy.base.Log;
+import org.synergy.client.ConnectionParams;
 import org.synergy.injection.Injection;
 
-public class Synergy extends Activity implements IToastListener, IUILogListener {
+import java.sql.Connection;
 
-    private final static String PROP_clientName = "clientName";
-    private final static String PROP_serverHost = "serverHost";
-    private final static String PROP_deviceName = "deviceName";
+public class Synergy extends Activity implements IToastListener, IUILogListener {
 
     private EditText outputText;
 
@@ -66,16 +67,11 @@ public class Synergy extends Activity implements IToastListener, IUILogListener 
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
-
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        String clientName = preferences.getString(PROP_clientName, null);
-        if (clientName != null) {
-            ((EditText) findViewById(R.id.clientNameEditText)).setText(clientName);
-        }
-        String serverHost = preferences.getString(PROP_serverHost, null);
-        if (serverHost != null) {
-            ((EditText) findViewById(R.id.serverHostEditText)).setText(serverHost);
-        }
+        ConnectionParams params = ConnectionParams.getDefaultConnectionParams(this);
+        ((EditText) findViewById(R.id.clientNameEditText)).setText(params.clientName);
+        ((EditText) findViewById(R.id.serverHostEditText)).setText(params.ipAddress);
+        ((EditText) findViewById(R.id.serverPortEditText)).setText(Integer.toString(params.port));
+        ((EditText) findViewById(R.id.inputDeviceEditText)).setText(params.deviceName);
 
         final Button connectButton = (Button) findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -91,9 +87,8 @@ public class Synergy extends Activity implements IToastListener, IUILogListener 
             }
         });
 
-        Log.setLogLevel(Log.Level.INFO);
+        Log.setLogLevel(Log.Level.DEBUG);
         outputText = (EditText) findViewById(R.id.outputEditText);
-
 
         Log.debug("Client starting....");
 
@@ -107,21 +102,15 @@ public class Synergy extends Activity implements IToastListener, IUILogListener 
     }
 
     private void connect() {
-        String clientName = ((EditText) findViewById(R.id.clientNameEditText)).getText().toString();
-        String ipAddress = ((EditText) findViewById(R.id.serverHostEditText)).getText().toString();
-        String portStr = ((EditText) findViewById(R.id.serverPortEditText)).getText().toString();
-        int port = Integer.parseInt(portStr);
-        String deviceName = ((EditText) findViewById(R.id.inputDeviceEditText)).getText().toString();
-
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor preferencesEditor = preferences.edit();
-        preferencesEditor.putString(PROP_clientName, clientName);
-        preferencesEditor.putString(PROP_serverHost, ipAddress);
-        preferencesEditor.putString(PROP_deviceName, deviceName);
-        preferencesEditor.apply();
+        ConnectionParams params = new ConnectionParams();
+        params.clientName = ((EditText) findViewById(R.id.clientNameEditText)).getText().toString();
+        params.ipAddress = ((EditText) findViewById(R.id.serverHostEditText)).getText().toString();
+        params.port = Integer.parseInt(((EditText) findViewById(R.id.serverPortEditText)).getText().toString());
+        params.deviceName = ((EditText) findViewById(R.id.inputDeviceEditText)).getText().toString();
+        params.save(this);
 
         Log.info("Connecting..");
-        SynergyService.connect(getApplicationContext(), clientName, ipAddress, port, deviceName);
+        SynergyService.connect(getApplicationContext(), params.clientName, params.ipAddress, params.port, params.deviceName);
     }
 
     private void disconnect() {

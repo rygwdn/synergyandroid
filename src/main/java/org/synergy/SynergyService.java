@@ -8,15 +8,14 @@ import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.view.Display;
 import android.view.WindowManager;
-import org.synergy.base.Event;
-import org.synergy.base.EventQueue;
-import org.synergy.base.EventType;
-import org.synergy.base.Log;
+import org.synergy.base.*;
 import org.synergy.base.exceptions.InvalidMessageException;
 import org.synergy.client.Client;
+import org.synergy.client.ConnectionParams;
 import org.synergy.common.screens.BasicScreen;
 import org.synergy.injection.Injection;
 import org.synergy.net.NetworkAddress;
@@ -31,7 +30,6 @@ public class SynergyService extends IntentService {
 
     private static final int FOREGROUND_ID = 1234;
 
-    private static final int DEFAULT_PORT = 24800;
     private static final String EXTRA_CLIENT_NAME = "org.synergy.extra.CLIENT_NAME";
     private static final String EXTRA_IP_ADDRESS = "org.synergy.extra.IP_ADDRESS";
     private static final String EXTRA_PORT = "org.synergy.extra.PORT";
@@ -110,24 +108,17 @@ public class SynergyService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_CONNECT.equals(action)) {
-                String ipAddress = intent.getStringExtra(EXTRA_IP_ADDRESS);
-                if (ipAddress == null) {
-                    throw new IllegalArgumentException("Missing '" + EXTRA_IP_ADDRESS + "' extra data");
+                ConnectionParams params = ConnectionParams.getDefaultConnectionParams(this);
+
+                Bundle extras = intent.getExtras();
+                if (extras != null) {
+                    params.ipAddress = extras.getString(EXTRA_IP_ADDRESS, params.ipAddress);
+                    params.clientName = extras.getString(EXTRA_CLIENT_NAME, params.clientName);
+                    params.deviceName = extras.getString(EXTRA_DEVICE_NAME, params.deviceName);
+                    params.port = extras.getInt(EXTRA_PORT, params.port);
                 }
 
-                String clientName = intent.getStringExtra(EXTRA_CLIENT_NAME);
-                if (clientName == null) {
-                    clientName = getString(R.string.client);
-                }
-
-                String deviceName = intent.getStringExtra(EXTRA_DEVICE_NAME);
-                if (deviceName == null) {
-                    deviceName = getString(R.string.device_name_default);
-                }
-
-                int port = intent.getIntExtra(EXTRA_PORT, DEFAULT_PORT);
-
-                handleActionConnect(clientName, deviceName, ipAddress, port);
+                handleActionConnect(params.clientName, params.deviceName, params.ipAddress, params.port);
             }
         }
     }
@@ -177,6 +168,16 @@ public class SynergyService extends IntentService {
     }
 
     private void handleActionConnect(String clientName, String deviceName, String host, int port) {
+        if (clientName == null || clientName.isEmpty()) {
+            throw new IllegalArgumentException("clientName can not be empty");
+        }
+        if (deviceName == null || deviceName.isEmpty()) {
+            throw new IllegalArgumentException("deviceName can not be empty");
+        }
+        if (host == null || host.isEmpty()) {
+            throw new IllegalArgumentException("host can not be empty");
+        }
+
         try {
             String uiMessage = String.format(getString(R.string.ui_connecting), host);
             showToast(uiMessage);
