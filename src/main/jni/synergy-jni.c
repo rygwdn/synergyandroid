@@ -49,7 +49,9 @@ void Java_org_synergy_injection_Injection_start (JNIEnv *env, jobject thiz, jstr
 
   jboolean isCopy;
   const char * szDeviceName = (*env)->GetStringUTFChars(env, deviceName, &isCopy);
+  (*env)->MonitorEnter(env, thiz);
   uinput_fd = suinput_open(szDeviceName, &id);
+  (*env)->MonitorExit(env, thiz);
 
   build_key_translation_table ();
 }
@@ -60,7 +62,9 @@ void Java_org_synergy_injection_Injection_start (JNIEnv *env, jobject thiz, jstr
  * Close down event injection
  */
 void Java_org_synergy_injection_Injection_stop (JNIEnv *env, jobject thiz) {
+  (*env)->MonitorEnter(env, thiz);
   suinput_close (uinput_fd);
+  (*env)->MonitorExit(env, thiz);
 }
 
 
@@ -214,7 +218,9 @@ void Java_org_synergy_injection_Injection_keydown (JNIEnv *env, jobject thiz, ji
         return;
     }
 
+    (*env)->MonitorEnter(env, thiz);
     suinput_press (uinput_fd, translatedKey);
+    (*env)->MonitorExit(env, thiz);
 }
 
 void Java_org_synergy_injection_Injection_keyup (JNIEnv *env, jobject thiz, jint key, jint mask) {
@@ -224,21 +230,31 @@ void Java_org_synergy_injection_Injection_keyup (JNIEnv *env, jobject thiz, jint
         __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keyup");
         return;
     }
+    (*env)->MonitorEnter(env, thiz);
     suinput_release (uinput_fd, translatedKey);
+    (*env)->MonitorExit(env, thiz);
 }
 
 void Java_org_synergy_injection_Injection_movemouse (JNIEnv *env, jobject thiz, const jint x, const jint y) {
+    (*env)->MonitorEnter(env, thiz);
     suinput_move_pointer (uinput_fd, x, y);
+    (*env)->MonitorExit(env, thiz);
 }
 
 void Java_org_synergy_injection_Injection_mousedown (JNIEnv *env, jobject thiz, jint buttonId) {
+    (*env)->MonitorEnter(env, thiz);
     suinput_press (uinput_fd, BTN_LEFT);
+    (*env)->MonitorExit(env, thiz);
 }
 
 void Java_org_synergy_injection_Injection_mouseup (JNIEnv *env, jobject thiz, jint buttonId) {
+    (*env)->MonitorEnter(env, thiz);
     suinput_release (uinput_fd, BTN_LEFT);
+    (*env)->MonitorExit(env, thiz);
 }
 
 void Java_org_synergy_injection_Injection_mousewheel (JNIEnv *env, jobject thiz, jint x, jint y) {
+    (*env)->MonitorEnter(env, thiz);
     suinput_move_wheel (uinput_fd, x, y);
+    (*env)->MonitorExit(env, thiz);
 }
