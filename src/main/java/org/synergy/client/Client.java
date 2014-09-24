@@ -22,7 +22,9 @@ package org.synergy.client;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.*;
 import org.synergy.base.*;
+import org.synergy.base.Log;
 import org.synergy.common.screens.ScreenInterface;
 import org.synergy.io.Stream;
 import org.synergy.io.StreamFilterFactoryInterface;
@@ -306,7 +308,6 @@ public class Client implements EventTarget {
 
     public void handshakeComplete() {
         screen.enable();
-        sendEvent(EventType.CLIENT_CONNECTED, "");
     }
 
     private void sendEvent(EventType type, Object data) {

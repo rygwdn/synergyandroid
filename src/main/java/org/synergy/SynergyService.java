@@ -46,7 +46,6 @@ public class SynergyService extends IntentService {
         System.loadLibrary("synergy-jni");
     }
 
-    private boolean mRunning = false;
     private Client mClient;
     private IToastListener toastListener;
     private IUILogListener uiLogListener;
@@ -94,13 +93,12 @@ public class SynergyService extends IntentService {
     }
 
     public void disconnect() {
-        if (mRunning) {
-            Log.info("SynergyService disconnecting");
-            mRunning = false;
-            mClient.disconnect("Closed");
-        } else {
-            Log.info("SynergyService not disconnecting (not running)");
-        }
+        String disconnectingMessage = getString(R.string.ui_disconnecting);
+        showToast(disconnectingMessage);
+        addUILog(disconnectingMessage);
+
+        Log.info("SynergyService disconnecting");
+        mClient.disconnect("Closed");
     }
 
     public SynergyService() {
@@ -138,25 +136,21 @@ public class SynergyService extends IntentService {
 
     private void runLoop() throws InvalidMessageException {
         try {
-            mRunning = true;
             Event event = new Event();
             event = EventQueue.getInstance().getEvent(event, -1.0);
-            Log.info("Start loop");
+            Log.info("Start loop with Got event: " + event.toString());
 
             while (event.getType() != EventType.QUIT
-                    && event.getType() != EventType.CLIENT_DISCONNECTED
-                    && mRunning) {
+                    && event.getType() != EventType.CLIENT_DISCONNECTED) {
                 Log.debug("About to dispatch: " + event.toString());
                 EventQueue.getInstance().dispatchEvent(event);
-                if (!mRunning) return;
 
-                Log.debug("About to wait");
+                Log.debug("About to get event");
                 event = EventQueue.getInstance().getEvent(event, -1.0);
             }
 
         } finally {
             Log.info("End loop");
-            mRunning = false;
             Injection.stop();
         }
     }

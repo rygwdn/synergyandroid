@@ -16,4 +16,5 @@
     <string name="ui_connected">Connected to %s</string>
     <string name="ui_disconnected">Disconnected from %s</string>
     <string name="ui_connection_failed">Connection Failed</string>
+    <string name="ui_disconnecting">Disconnecting..</string>
 </resources>
