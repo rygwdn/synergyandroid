@@ -110,10 +110,23 @@ public class SynergyService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_CONNECT.equals(action)) {
-                final String clientName = intent.getStringExtra(EXTRA_CLIENT_NAME);
-                final String deviceName = intent.getStringExtra(EXTRA_DEVICE_NAME);
-                final String ipAddress = intent.getStringExtra(EXTRA_IP_ADDRESS);
-                final int port = intent.getIntExtra(EXTRA_PORT, DEFAULT_PORT);
+                String ipAddress = intent.getStringExtra(EXTRA_IP_ADDRESS);
+                if (ipAddress == null) {
+                    throw new IllegalArgumentException("Missing '" + EXTRA_IP_ADDRESS + "' extra data");
+                }
+
+                String clientName = intent.getStringExtra(EXTRA_CLIENT_NAME);
+                if (clientName == null) {
+                    clientName = getString(R.string.client);
+                }
+
+                String deviceName = intent.getStringExtra(EXTRA_DEVICE_NAME);
+                if (deviceName == null) {
+                    deviceName = getString(R.string.device_name_default);
+                }
+
+                int port = intent.getIntExtra(EXTRA_PORT, DEFAULT_PORT);
+
                 handleActionConnect(clientName, deviceName, ipAddress, port);
             }
         }
