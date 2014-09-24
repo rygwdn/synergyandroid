@@ -25,10 +25,14 @@ import org.synergy.base.Log;
 import org.synergy.injection.Injection;
 
 import java.util.Arrays;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BasicScreen implements ScreenInterface {
 
     private final int[] buttonToKeyDownID;
+    private final MouseUpdater mMouseUpdater;
 
     // Keep track of the mouse cursor since I cannot find a way of
     //  determining the current mouse position
@@ -39,6 +43,8 @@ public class BasicScreen implements ScreenInterface {
     private int width;
     private int height;
 
+    private boolean onScreen = false;
+
     public BasicScreen() {
 
         // the keyUp/Down/Repeat button parameter appears to be the low-level
@@ -46,6 +52,8 @@ public class BasicScreen implements ScreenInterface {
         // from anecdotal experience, not as an expert...
         buttonToKeyDownID = new int[256];
         Arrays.fill(buttonToKeyDownID, -1);
+        mMouseUpdater = new MouseUpdater();
+        mMouseUpdater.start();
     }
 
     /**
@@ -74,13 +82,18 @@ public class BasicScreen implements ScreenInterface {
 
     @Override
     public void enter(int toggleMask) {
+        onScreen = true;
+        Log.info("Enter");
+        clearMousePosition();
         allKeysUp();
-
     }
 
     @Override
     public boolean leave() {
+        Log.info("Leave");
+        clearMousePosition();
         allKeysUp();
+        onScreen = false;
         return true;
     }
 
@@ -134,34 +147,27 @@ public class BasicScreen implements ScreenInterface {
 
     @Override
     public final void mouseMove(int x, int y) {
-        Log.debug2("mouseMove: " + x + ", " + y);
-
-        // this state appears to signal a screen exit, use this to
-        // flag mouse position reinitialization for next call
-        // to this method.
-        if (x == width && y == height) {
-            clearMousePosition(true);
+        if (!onScreen) {
             return;
         }
 
-        if (mouseX < 0 || mouseY < 0) {
-            Injection.movemouse(-width, -height);
-            Injection.movemouse(x, y);
-            mouseX = x;
-            mouseY = y;
+        if (mouseX == width && mouseY == height) {
+            Log.debug("abs mouseMove: " + x + ", " + y);
+
+            mMouseUpdater.movemouse(x - width, y - height);
+            mouseX = Math.max(0, Math.min(width, x));
+            mouseY = Math.max(0, Math.min(height, y));
         } else {
-            int dx = x - mouseX;
-            int dy = y - mouseY;
-            Injection.movemouse(dx, dy);
-            // Adjust 'known' cursor position
-            mouseX += dx;
-            mouseY += dy;
+            mouseRelativeMove(x - mouseX, y - mouseY);
         }
     }
 
     @Override
     public void mouseRelativeMove(int x, int y) {
-        Injection.movemouse(x, y);
+        Log.debug("rel mouseMove: " + x + ", " + y);
+        mMouseUpdater.movemouse(x, y);
+        mouseX = Math.max(0, Math.min(width, mouseX + x));
+        mouseY = Math.max(0, Math.min(height, mouseY + y));
     }
 
     @Override
@@ -169,13 +175,13 @@ public class BasicScreen implements ScreenInterface {
         Injection.mousewheel(x, y);
     }
 
-    private void clearMousePosition(boolean inject) {
-        mouseX = -1;
-        mouseY = -1;
-        if (inject) {
-            // moving to height/width will hide mouse pointer
-            Injection.movemouse(width, height);
-        }
+    private void clearMousePosition() {
+        Log.debug("clear mouse");
+
+        // hide mouse pointer
+        mMouseUpdater.hide();
+        mouseX = width;
+        mouseY = height;
     }
 
     @Override
@@ -188,4 +194,87 @@ public class BasicScreen implements ScreenInterface {
         return this;
     }
 
+    /**
+     * Thread to ensure we don't flood android with movement events.
+     */
+    private class MouseUpdater extends  Thread {
+        private static final int MOUSE_HIDE_DELAY = 50;
+        private static final int MOUSE_UPDATE_FREQ_MILIS = 20;
+
+        private int mDx = 0;
+        private int mDy = 0;
+        private boolean mHide = false;
+
+        private Lock mLock = new ReentrantLock();
+        private Condition mCondition = mLock.newCondition();
+
+        /**
+         * Perform relative mouse move.
+         */
+        public void movemouse(int dx, int dy) {
+            mLock.lock();
+            try {
+                mDx += dx;
+                mDy += dy;
+                mCondition.signal();
+            } finally {
+                mLock.unlock();
+            }
+        }
+
+        /**
+         * Hide the mouse by moving to (width, height)
+         */
+        public void hide() {
+            mLock.lock();
+            try {
+                mHide = true;
+                mDx = 0;
+                mDy = 0;
+                mCondition.signal();
+            } finally {
+                mLock.unlock();
+            }
+        }
+
+        public void run() {
+            while (isAlive()) {
+                int delay = MOUSE_UPDATE_FREQ_MILIS;
+                mLock.lock();
+                try {
+                    while (!mHide && mDx == 0 && mDy == 0) {
+                        // Wait for something to do (no busy loop)
+                        mCondition.await();
+                    }
+
+                    if (mHide) {
+                        doMouseMove(width, height);
+                        mHide = false;
+                        // Sleep a bit longer for a clear to avoid bug(reason unknown)
+                        delay = MOUSE_HIDE_DELAY;
+                    } else {
+                        doMouseMove(mDx, mDy);
+                        mDx = mDy = 0;
+                    }
+                } catch (InterruptedException e) {
+                    Log.error("MouseUpdater interrupted while awaiting");
+                    e.printStackTrace();
+                } finally {
+                    mLock.unlock();
+                }
+
+                // Don't need the lock while we sleep
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Log.error("MouseUpdater interrupted while sleeping");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        private void doMouseMove(final int dx, final int dy) {
+            Injection.movemouse(dx, dy);
+        }
+    }
 }
