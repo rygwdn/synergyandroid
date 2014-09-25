@@ -14,6 +14,8 @@
               android:background="@android:drawable/edit_text"
               android:textColor="@android:color/widget_edittext_dark"
               android:text="@string/client"
+              android:nextFocusDown="@+id/serverHostEditText"
+              android:nextFocusForward="@id/serverHostEditText"
               android:id="@+id/clientNameEditText"/>
 
     <TextView android:layout_width="fill_parent"
@@ -26,18 +28,22 @@
               android:background="@android:drawable/edit_text"
               android:textColor="@android:color/widget_edittext_dark"
               android:text="@string/host"
-              android:id="@+id/serverHostEditText"/>
+              android:nextFocusDown="@+id/serverPortEditText"
+              android:nextFocusForward="@id/serverPortEditText"
+              android:id="@id/serverHostEditText"/>
 
     <TextView android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:text="@string/server_port_text"
               android:id="@+id/serverPortTextView"/>
 
-    <EditText android:id="@+id/serverPortEditText"
+    <EditText android:id="@id/serverPortEditText"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:background="@android:drawable/edit_text"
               android:textColor="@android:color/widget_edittext_dark"
+              android:nextFocusDown="@+id/inputDeviceEditText"
+              android:nextFocusForward="@id/inputDeviceEditText"
               android:inputType="number"
               android:text="@string/server_port_default"/>
 
@@ -50,8 +56,10 @@
               android:layout_height="wrap_content"
               android:background="@android:drawable/edit_text"
               android:textColor="@android:color/widget_edittext_dark"
+              android:nextFocusDown="@+id/connectButton"
+              android:nextFocusForward="@id/connectButton"
               android:text="@string/device_name_default"
-              android:id="@+id/inputDeviceEditText"/>
+              android:id="@id/inputDeviceEditText"/>
 
     <RelativeLayout android:layout_width="fill_parent"
                   android:layout_height="wrap_content">
@@ -60,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:text="@string/connect"
-                android:id="@+id/connectButton"/>
+                android:id="@id/connectButton"/>
 
         <Button android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -4,7 +4,7 @@
     <string name="clientdesc">Synergy Client Name:</string>
     <string name="client">android</string>
     <string name="hostdesc">Server IP/Hostname:</string>
-    <string name="host">igsarmewmactck</string>
+    <string name="host">10.0.0.1</string>
     <string name="connect">Connect</string>
     <string name="server_port_text">Server Port:</string>
     <string name="server_port_default">24800</string>
