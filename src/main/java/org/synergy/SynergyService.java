@@ -118,7 +118,7 @@ public class SynergyService extends IntentService {
                     params.port = extras.getInt(EXTRA_PORT, params.port);
                 }
 
-                handleActionConnect(params.clientName, params.deviceName, params.ipAddress, params.port);
+                handleActionConnect(params.clientName.trim(), params.deviceName.trim(), params.ipAddress.trim(), params.port);
             }
         }
     }
