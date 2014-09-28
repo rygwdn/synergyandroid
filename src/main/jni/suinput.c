@@ -29,27 +29,29 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "suinput.h"
 
-#define DEBUG_TAG "Synergy"
+#define DEBUG_TAG "Synergy JNI"
 
 char* UINPUT_FILEPATHS[] = {
+  "/dev/uinput",
   "/android/dev/uinput",
-  "/dev/uinput",     // crw-rw----    1 system   bluetoot   10, 223 Oct 28 22:04 uinput
   "/dev/input/uinput",
   "/dev/misc/uinput",
 };
+
 #define UINPUT_FILEPATHS_COUNT (sizeof(UINPUT_FILEPATHS) / sizeof(char*))
 
 static inline int suinput_write(int uinput_fd,
-                         uint16_t type, uint16_t code, int32_t value)
-{
+                         uint16_t type, uint16_t code, int32_t value) {
   struct input_event event;
   
   memset(&event, 0, sizeof(event));
   event.type = type;
   event.code = code;
   event.value = value;
-  if (write(uinput_fd, &event, sizeof(event)) != sizeof(event))
+  if (write(uinput_fd, &event, sizeof(event)) != sizeof(event)) {
+    __android_log_print (ANDROID_LOG_FATAL, DEBUG_TAG, "Failed to write to event path");
     return -1;
+  }
   return 0;
 }
 
@@ -94,7 +96,7 @@ int suinput_open(const char* device_name, const struct input_id* id)
     goto err;
   }
   
-  /* Synchronization events, this is probably set implicitely too. */
+  /* Synchronization events, this is probably set implicitly too. */
   if (ioctl(uinput_fd, UI_SET_EVBIT, EV_SYN) == -1) {
     goto err;
   }
@@ -106,8 +108,8 @@ int suinput_open(const char* device_name, const struct input_id* id)
      }
   }
   
-  for (i=REL_X;i<REL_MAX;i++) {
-      if (ioctl(uinput_fd,UI_SET_RELBIT,i) < 0) {
+  for (i = REL_X; i < REL_MAX; i++) {
+      if (ioctl(uinput_fd, UI_SET_RELBIT,i) < 0) {
          goto err;
       }
   }

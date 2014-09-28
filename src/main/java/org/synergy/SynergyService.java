@@ -170,11 +170,9 @@ public class SynergyService extends IntentService {
     private void handleActionConnect(String clientName, String deviceName, String host, int port) {
         if (clientName == null || clientName.isEmpty()) {
             throw new IllegalArgumentException("clientName can not be empty");
-        }
-        if (deviceName == null || deviceName.isEmpty()) {
+        } else  if (deviceName == null || deviceName.isEmpty()) {
             throw new IllegalArgumentException("deviceName can not be empty");
-        }
-        if (host == null || host.isEmpty()) {
+        } else if (host == null || host.isEmpty()) {
             throw new IllegalArgumentException("host can not be empty");
         }
 
