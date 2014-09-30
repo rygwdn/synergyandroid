@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <android/log.h>
 
 #include "uinput.h"
@@ -67,10 +68,25 @@ int suinput_open(const char* device_name, const struct input_id* id)
   int original_errno = 0;
   int uinput_fd = -1;
   struct uinput_user_dev user_dev;
+  char chmod_cmd[255];
   int i;
 
   for (i = 0; i < UINPUT_FILEPATHS_COUNT; ++i) {
-    uinput_fd = open(UINPUT_FILEPATHS[i], O_WRONLY);
+    char *device_path = UINPUT_FILEPATHS[i];
+    uinput_fd = open(device_path, O_WRONLY);
+
+    // Try to chmod the file if we can't access it
+    if (uinput_fd == -1 && errno == EACCES) {
+      sprintf(chmod_cmd, "su -c 'chmod 666 %s'", device_path);
+      system(chmod_cmd);
+
+      __android_log_print(ANDROID_LOG_WARN, DEBUG_TAG,
+          "Could not open %s: %s. chmod and retry: %s",
+          device_path, strerror(errno), chmod_cmd);
+
+      uinput_fd = open(device_path, O_WRONLY);
+    }
+
     if (uinput_fd != -1)
       break;
   }

@@ -92,12 +92,6 @@ public class Synergy extends Activity implements IToastListener, IUILogListener 
 
         Log.debug("Client starting....");
 
-        try {
-            Injection.setPermissionsForInputDevice();
-        } catch (Exception e) {
-            // TODO handle exception
-        }
-
         doBindService();
     }
 
