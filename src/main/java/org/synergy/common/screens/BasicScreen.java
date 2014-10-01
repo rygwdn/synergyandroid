@@ -21,9 +21,11 @@ package org.synergy.common.screens;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.IBinder;
 import org.synergy.base.Log;
 import org.synergy.injection.Injection;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -101,6 +103,7 @@ public class BasicScreen implements ScreenInterface {
         // TODO Auto-generated method stub
     }
 
+    private static final int KEY_F6 = 0xEFC3;
 
     @Override
     public void keyDown(int keyID, int mask, int button) {
@@ -116,7 +119,27 @@ public class BasicScreen implements ScreenInterface {
             Log.note("found keyDown button parameter > " + buttonToKeyDownID.length + ", may not be able to properly handle keyUp event.");
         }
 
+        // Handle F6 manually in keyUp
+        if (keyID == KEY_F6) {
+            return;
+        }
+
         Injection.keydown(keyID, mask, button);
+    }
+
+    private void showRecentApps() {
+        try {
+            Class serviceManagerClass = Class.forName("android.os.ServiceManager");
+            Method getService = serviceManagerClass.getMethod("getService", String.class);
+            IBinder retbinder = (IBinder) getService.invoke(serviceManagerClass, "statusbar");
+            Class statusBarClass = Class.forName(retbinder.getInterfaceDescriptor());
+            Object statusBarObject = statusBarClass.getClasses()[0].getMethod("asInterface", IBinder.class).invoke(null, new Object[] { retbinder });
+            Method toggleRecentApps = statusBarClass.getMethod("toggleRecentApps");
+            toggleRecentApps.setAccessible(true);
+            toggleRecentApps.invoke(statusBarObject);
+        } catch (Exception e) {
+            Log.info("Unable to show recent apps: " + e.toString());
+        }
     }
 
     @Override
@@ -128,6 +151,11 @@ public class BasicScreen implements ScreenInterface {
             }
         } else {
             Log.note("found keyUp button parameter > " + buttonToKeyDownID.length + ", may not be able to properly handle keyUp event.");
+        }
+
+        if (keyID == KEY_F6) {
+            showRecentApps();
+            return;
         }
 
         Injection.keyup(keyID, mask, button);
