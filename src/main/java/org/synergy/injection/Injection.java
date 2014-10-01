@@ -20,9 +20,9 @@ public final class Injection {
 
     public static native void stop();
 
-    public static native void keydown(int key, int mask);
+    public static native void keydown(int key, int mask, int button);
 
-    public static native void keyup(int key, int mask);
+    public static native void keyup(int key, int mask, int button);
 
     public static final native void movemouse(final int x, final int y);
 

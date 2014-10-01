@@ -103,7 +103,7 @@ public class BasicScreen implements ScreenInterface {
 
 
     @Override
-    public void keyDown(int id, int mask, int button) {
+    public void keyDown(int keyID, int mask, int button) {
         // 1) 'button - 1' appears to be the low-level keyboard scan code
         // 2) 'id' does not appear to be conserved between server keyDown
         // and keyUp event broadcasts as the 'id' on *most* keyUp events
@@ -111,24 +111,26 @@ public class BasicScreen implements ScreenInterface {
         // so we store the keyDown 'id' using this event so that we can
         // pull out the 'id' used for keyDown for proper keyUp handling
         if (button < buttonToKeyDownID.length) {
-            buttonToKeyDownID[button] = id;
+            buttonToKeyDownID[button] = keyID;
         } else {
             Log.note("found keyDown button parameter > " + buttonToKeyDownID.length + ", may not be able to properly handle keyUp event.");
         }
-        Injection.keydown(id, mask);
+
+        Injection.keydown(keyID, mask, button);
     }
 
     @Override
-    public void keyUp(int id, int mask, int button) {
+    public void keyUp(int keyID, int mask, int button) {
         if (button < buttonToKeyDownID.length) {
             int keyDownID = buttonToKeyDownID[button];
             if (keyDownID > -1) {
-                id = keyDownID;
+                keyID = keyDownID;
             }
         } else {
             Log.note("found keyUp button parameter > " + buttonToKeyDownID.length + ", may not be able to properly handle keyUp event.");
         }
-        Injection.keyup(id, mask);
+
+        Injection.keyup(keyID, mask, button);
     }
 
     @Override
