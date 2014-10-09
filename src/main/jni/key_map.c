@@ -109,13 +109,15 @@ static void fillMap() {
     KEY_MAP['+'] = KEY_EQUAL;
     KEY_MAP['{'] = KEY_LEFTBRACE;
     KEY_MAP['}'] = KEY_RIGHTBRACE;
-    KEY_MAP[';'] = KEY_SEMICOLON;
+    KEY_MAP[':'] = KEY_SEMICOLON;
     KEY_MAP['"'] = KEY_APOSTROPHE;
 
     KEY_MAP['|'] = KEY_BACKSLASH;
     KEY_MAP['<'] = KEY_COMMA;
     KEY_MAP['>'] = KEY_DOT;
     KEY_MAP['?'] = KEY_SLASH;
+
+    KEY_MAP[' '] = KEY_SPACE;
 
     // TTY functions
     KEY_MAP[kKeyBackSpace] = KEY_BACKSPACE;

@@ -83,10 +83,10 @@ void Java_org_synergy_injection_Injection_keydown(JNIEnv *env, jobject thiz, jin
     uint16_t translatedKey = keycode(key);
     if (translatedKey == 0) {
         // Unknown key...
-        __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keydown");
+        __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keydown: %d", key);
         return;
     }
-    __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "keycode keydown: %d -> %d", key, translatedKey);
+    __android_log_print (ANDROID_LOG_DEBUG, DEBUG_TAG, "keycode keydown: %d -> %d", key, translatedKey);
 
     (*env)->MonitorEnter(env, thiz);
     suinput_press (uinput_fd, translatedKey);
@@ -97,10 +97,10 @@ void Java_org_synergy_injection_Injection_keyup(JNIEnv *env, jobject thiz, jint 
     uint16_t translatedKey = keycode(key);
     if (translatedKey == 0) {
         // Unknown key...
-        __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keyup");
+        __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "Unknown keycode on keyup: %d", key);
         return;
     }
-    __android_log_print (ANDROID_LOG_WARN, DEBUG_TAG, "keycode keyup: %d -> %d", key, translatedKey);
+    __android_log_print (ANDROID_LOG_DEBUG, DEBUG_TAG, "keycode keyup: %d -> %d", key, translatedKey);
 
     (*env)->MonitorEnter(env, thiz);
     suinput_release (uinput_fd, translatedKey);
