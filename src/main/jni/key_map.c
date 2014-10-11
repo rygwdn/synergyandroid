@@ -232,6 +232,10 @@ static void fillMap() {
     KEY_MAP[kKeyAlt_L] = KEY_LEFTALT;
     KEY_MAP[kKeyAlt_R] = KEY_RIGHTALT;
 
+    // Map super/command key -> ctrl
+    KEY_MAP[kKeySuper_L] = KEY_LEFTCTRL;
+    KEY_MAP[kKeySuper_R] = KEY_RIGHTCTRL;
+
     // multi-key character composition
     KEY_MAP[kKeyCompose] = KEY_COMPOSE;
 
