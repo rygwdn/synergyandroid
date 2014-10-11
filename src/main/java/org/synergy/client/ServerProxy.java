@@ -19,6 +19,9 @@
  */
 package org.synergy.client;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import org.synergy.base.*;
 import org.synergy.io.Stream;
 import org.synergy.io.msgs.*;
@@ -42,6 +45,8 @@ public class ServerProxy {
     private Parser parser;
     private double keepAliveAlarm;
 
+    private ClipboardManager clipboardManager;
+
     // TODO KeyModifierTable
     private EventQueueTimer keepAliveAlarmTimer;
     private DataInputStream din;
@@ -49,6 +54,7 @@ public class ServerProxy {
     public ServerProxy(Client client, Stream stream) {
         this.client = client;
         this.stream = stream;
+        this.clipboardManager = (ClipboardManager) client.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
 
         this.seqNum = 0;
 
@@ -394,6 +400,11 @@ public class ServerProxy {
 
     private void setClipboard(ClipboardDataMessage clipboardDataMessage) {
         Log.debug1("Setting clipboard: " + clipboardDataMessage);
+
+        ClipData data = clipboardDataMessage.getClipData();
+        if (data != null) {
+            clipboardManager.setPrimaryClip(data);
+        }
     }
 
     /**

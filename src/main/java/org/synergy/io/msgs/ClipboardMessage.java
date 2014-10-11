@@ -23,10 +23,14 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ClipboardMessage extends Message {
-    public static final MessageType MESSAGE_TYPE = MessageType.DCLIPBOARD;
+    public static final MessageType MESSAGE_TYPE = MessageType.CCLIPBOARD;
+
+    private byte id;
+    private int sequenceNumber;
 
     public ClipboardMessage(MessageHeader header, DataInputStream din) throws IOException {
-        din.skipBytes(header.getDataSize());
+        id = din.readByte();
+        sequenceNumber = din.readInt();
     }
 
     public String toString() {

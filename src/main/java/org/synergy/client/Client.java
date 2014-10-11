@@ -390,4 +390,7 @@ public class Client implements EventTarget {
         screen.keyUp(keyEventID, mask, button);
     }
 
+    public Context getContext() {
+        return context;
+    }
 }
