@@ -194,7 +194,6 @@ public class BasicScreen implements ScreenInterface {
 
     @Override
     public void mouseRelativeMove(int x, int y) {
-        Log.debug("rel mouseMove: " + x + ", " + y);
         mMouseUpdater.movemouse(x, y);
         mouseX = Math.max(0, Math.min(width, mouseX + x));
         mouseY = Math.max(0, Math.min(height, mouseY + y));
