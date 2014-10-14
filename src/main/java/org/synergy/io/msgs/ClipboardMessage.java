@@ -34,6 +34,6 @@ public class ClipboardMessage extends Message {
     }
 
     public String toString() {
-        return "ClipboardMessage: TODO";
+        return "ClipboardMessage: id: " + id + " seq: " + sequenceNumber;
     }
 }
